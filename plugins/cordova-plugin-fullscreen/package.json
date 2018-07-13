@@ -1,17 +1,50 @@
 {
-  "name": "cordova-plugin-fullscreen",
-  "version": "1.1.0",
-  "description": "Plugin for Cordova (or PhoneGap) 3.0+ to enable true full screen on Android devices using lean and immersive modes",
+  "_from": "cordova-plugin-fullscreen",
+  "_id": "cordova-plugin-fullscreen@1.2.0",
+  "_inBundle": false,
+  "_integrity": "sha512-cl8mE1MoTjv4JlwV6dw3nOc7Qj18WuNJLf2jHWUmRTYzCI/SW9ym/ghSVvonTVnaoECuHrOpmAfUoFzbb8kf2Q==",
+  "_location": "/cordova-plugin-fullscreen",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "cordova-plugin-fullscreen",
+    "name": "cordova-plugin-fullscreen",
+    "escapedName": "cordova-plugin-fullscreen",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cordova-plugin-fullscreen/-/cordova-plugin-fullscreen-1.2.0.tgz",
+  "_shasum": "482b38e881715e1fc812d6c35bea1072efb424a7",
+  "_spec": "cordova-plugin-fullscreen",
+  "_where": "/home/udibagas/apps/imis-fuel",
+  "author": {
+    "name": "Neil Rackett"
+  },
+  "bugs": {
+    "url": "https://github.com/mesmotronic/cordova-fullscreen-plugin/issues"
+  },
+  "bundleDependencies": false,
   "cordova": {
     "id": "cordova-plugin-fullscreen",
     "platforms": [
       "android"
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mesmotronic/cordova-fullscreen-plugin.git"
-  },
+  "deprecated": false,
+  "description": "Plugin for Cordova (or PhoneGap) 3.0+ to enable true full screen on Android devices using lean and immersive modes",
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=3.0.0"
+    }
+  ],
+  "homepage": "https://github.com/mesmotronic/cordova-fullscreen-plugin#readme",
   "keywords": [
     "cordova",
     "android",
@@ -21,16 +54,11 @@
     "ecosystem:cordova",
     "cordova-android"
   ],
-  "engines": [
-    {
-      "name": "cordova",
-      "version": ">=3.0.0"
-    }
-  ],
-  "author": "Neil Rackett",
   "license": "BSD",
-  "bugs": {
-    "url": "https://github.com/mesmotronic/cordova-fullscreen-plugin/issues"
+  "name": "cordova-plugin-fullscreen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mesmotronic/cordova-fullscreen-plugin.git"
   },
-  "homepage": "https://github.com/mesmotronic/cordova-fullscreen-plugin#readme"
+  "version": "1.2.0"
 }

@@ -36,32 +36,25 @@
                 <param name="android-package" value="jk.cordova.plugin.kiosk.KioskPlugin" />
             </feature>
         </config-file>
-        
+
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.REORDER_TASKS" />
+            <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+            <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+        </config-file>
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            
-            <!-- activity to use as launcher - because Cordova app is failing if started while boot -->
-            <activity android:label="@string/activity_name" android:launchMode="singleTop" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:keepScreenOn="true" android:name="jk.cordova.plugin.kiosk.HomeActivity">
+            <activity android:label="Kiosk app" android:launchMode="singleTop" android:keepScreenOn="true" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale" android:windowSoftInputMode="adjustResize" android:name="jk.cordova.plugin.kiosk.KioskActivity">
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />
                     <category android:name="android.intent.category.DEFAULT" /><!-- Handler of app icon (required to be launcher) -->
                     <category android:name="android.intent.category.HOME" /><!-- Handler of Home button -->
                 </intent-filter>
             </activity>
-            
-            <!-- inner activity, replacement of MainActivity with buttons blocked -->
-            <activity android:label="Kiosk activity" android:launchMode="singleTop" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:keepScreenOn="true" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|uiMode" android:windowSoftInputMode="adjustResize" android:name="jk.cordova.plugin.kiosk.KioskActivity">
-            </activity>
-                        
         </config-file>
         
-        <config-file target="AndroidManifest.xml" parent="/manifest">
-                <uses-permission android:name="android.permission.REORDER_TASKS"/>
-        </config-file>
-        
-        <source-file src="android/HomeActivity.java" target-dir="src/jk/cordova/plugin/kiosk" />
         <source-file src="android/KioskActivity.java" target-dir="src/jk/cordova/plugin/kiosk" />
         <source-file src="android/KioskPlugin.java" target-dir="src/jk/cordova/plugin/kiosk" />
-        
+
     </platform>
     
 </plugin>

@@ -1,61 +1,55 @@
 {
-    "prepare_queue": {
-        "installed": [],
-        "uninstalled": []
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {}
+  },
+  "installed_plugins": {
+    "cordova-plugin-camera": {
+      "PACKAGE_NAME": "io.imis.fuel"
     },
-    "config_munge": {
-        "files": {}
+    "cordova-plugin-device": {
+      "PACKAGE_NAME": "io.imis.fuel"
     },
-    "installed_plugins": {
-        "cordova-plugin-device": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-dialogs": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-fullscreen": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-insomnia": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-kiosk": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-network-information": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-spinner-dialog": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-splashscreen": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-sqlite-storage": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-advanced-geolocation": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        }
+    "cordova-plugin-dialogs": {
+      "PACKAGE_NAME": "io.imis.fuel"
     },
-    "dependent_plugins": {
-        "com.phonegap.plugins.barcodescanner": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-compat": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-camera": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "cordova-plugin-file": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        },
-        "es6-promise-plugin": {
-            "PACKAGE_NAME": "io.imis.fuel"
-        }
+    "cordova-plugin-file": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "cordova-plugin-fullscreen": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "cordova-plugin-insomnia": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "cordova-plugin-kiosk": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "cordova-plugin-network-information": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "cordova-plugin-spinner-dialog": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "cordova-plugin-splashscreen": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "cordova-sqlite-storage": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "es6-promise-plugin": {
+      "PACKAGE_NAME": "io.imis.fuel"
+    },
+    "phonegap-plugin-barcodescanner": {
+      "ANDROID_SUPPORT_V4_VERSION": "27.+",
+      "PACKAGE_NAME": "io.imis.fuel"
     }
+  },
+  "dependent_plugins": {}
 }

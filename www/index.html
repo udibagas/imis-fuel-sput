@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="lib/onsenui/css/onsenui.css"/>
         <link rel="stylesheet" href="lib/onsenui/css/onsen-css-components.css"/>
         <link rel="stylesheet" type="text/css" href="css/index.css">
-        <title>IMIS</title>
+        <title>IMIS FUEL</title>
     </head>
     <body>
         <ons-navigator page="login.html" id="my-navigator" animation="slide"></ons-navigator>
@@ -19,21 +19,12 @@
                     <div class="center">
                         IMIS FUEL - LOGIN
                     </div>
-					<div class="right">
-                        <ons-toolbar-button>
-                            <span id="local-data"></span>
-                            <ons-icon icon="ion-ios-cloud-upload-outline" id="upload-indicator"></ons-icon>
-                            <ons-icon icon="ion-arrow-swap" id="server-indicator"></ons-icon>
-                            <ons-icon icon="ion-wifi" id="wifi-indicator"></ons-icon>
-							<ons-icon icon="ion-ios-location-outline" id="gps-indicator"></ons-icon>
-                        </ons-toolbar-button>
-                    </div>
                 </ons-toolbar>
                 <div class="background"></div>
                 <div class="content">
 
 					<h3 style="text-align:center;margin-bottom:0;">
-                        IMIS FUEL V2
+                        IMIS FUEL SPUT
                     </h3>
 					<h4 style="text-align:center;margin-top:0;">
                         FUEL TANK : <span id="fuel-tank-info"></span>
@@ -41,7 +32,7 @@
 
                     <div style="width:300px;margin:auto;">
                         <p>
-                        	<ons-input type="text" placeholder="USERNAME" modifier="material large" id="username" class="input-full"></ons-input>
+                        	<ons-input type="text" placeholder="EMAIL" modifier="material large" id="email" class="input-full"></ons-input>
                         </p>
                         <p>
                         	<ons-input type="password" placeholder="PASSWORD" modifier="material large" id="password" class="input-full"></ons-input>
@@ -62,7 +53,29 @@
                             </ons-col>
                         </ons-row>
                         <br>
+                        <ons-button class="big" modifier="material large" onclick="app.history()">
+                            HISTORY
+                        </ons-button>
                     </div>
+                </div>
+            </ons-page>
+        </ons-template>
+
+		<!-- TEMPLATE FOR HISTORY -->
+        <ons-template id="history.html">
+            <ons-page>
+                <ons-toolbar>
+                    <div class="left">
+                        <ons-back-button>Back</ons-back-button>
+                    </div>
+                    <div class="center">
+                        IMIS FUEL - HISTORY
+                    </div>
+                </ons-toolbar>
+                <div class="background"></div>
+                <div class="content">
+                    <ons-list id="history-list">
+                    </ons-list>
                 </div>
             </ons-page>
         </ons-template>
@@ -95,41 +108,26 @@
         <ons-template id="form-fuel.html">
             <ons-page>
                 <ons-toolbar>
-                    <!-- <div class="left">
-                        <ons-back-button>Back</ons-back-button>
-                    </div> -->
                     <div class="center">
-                        IMIS FUEL - INPUT DATA
-                    </div>
-					<div class="right">
-                        <ons-toolbar-button>
-                            <span id="local-data"></span>
-                            <ons-icon icon="ion-ios-cloud-upload-outline" id="upload-indicator"></ons-icon>
-                            <ons-icon icon="ion-arrow-swap" id="server-indicator"></ons-icon>
-                            <ons-icon icon="ion-wifi" id="wifi-indicator"></ons-icon>
-							<ons-icon icon="ion-ios-location-outline" id="gps-indicator"></ons-icon>
-                        </ons-toolbar-button>
+                        IMIS FUEL
                     </div>
                 </ons-toolbar>
                 <div class="background"></div>
                 <div class="content">
-                    <div style="margin:30px auto 0;">
+                    <div style="margin:0 auto;">
 
-						<ons-row>
-							<ons-col width="30%">
-								<label for="">FUEL TANK</label>
-							</ons-col>
-							<ons-col width="70%">
-								<ons-input type="text" modifier="material large" id="fuel-tank" class="input-full" readonly></ons-input>
-							</ons-col>
-						</ons-row><br>
+                        <h2 id="fuel-tank" style="text-align:center;margin:0;"></h2>
+                        <div id="user" style="text-align:center;"></div>
+                        <hr>
+
+                        <br><br>
 
 						<ons-row>
 							<ons-col width="30%">
 								<label for="">UNIT</label>
 							</ons-col>
 							<ons-col width="70%">
-		                        <ons-input type="text" placeholder="UNIT" modifier="material large" id="unit" class="input-full" onchange="app.getLastHmKm(this.value)"></ons-input>
+		                        <ons-input type="text" placeholder="Unit" modifier="material large" id="unit" class="input-full" onchange="app.getLastHmKm(this.value)"></ons-input>
 							</ons-col>
 						</ons-row><br>
 
@@ -138,12 +136,12 @@
 								<label for="">HM</label>
 							</ons-col>
 							<ons-col width="33%">
-		                        <ons-input type="number" placeholder="HM" modifier="material large" id="hm" class="input-full" onchange="app.hitungTotalLiter(this.value)"></ons-input>
+		                        <ons-input type="number" placeholder="HM Now" modifier="material large" id="hm" class="input-full" onchange="app.hitungTotalRecommended(this.value)"></ons-input>
 							</ons-col>
 							<ons-col width="4%">
 							</ons-col>
 							<ons-col width="33%">
-		                        <ons-input type="number" placeholder="HM LAST" modifier="material large" id="hm_last" class="input-full"></ons-input>
+		                        <ons-input type="number" placeholder="HM Last" modifier="material large" id="hm_last" class="input-full" readonly></ons-input>
 							</ons-col>
 						</ons-row><br>
 
@@ -152,12 +150,12 @@
 								<label for="">KM</label>
 							</ons-col>
 							<ons-col width="33%">
-								<ons-input type="number" placeholder="KM" modifier="material large" id="km" class="input-full"></ons-input>
+								<ons-input type="number" placeholder="KM Now" modifier="material large" id="km" class="input-full"></ons-input>
 							</ons-col>
 							<ons-col width="4%">
 							</ons-col>
 							<ons-col width="33%">
-								<ons-input type="number" placeholder="KM LAST" modifier="material large" id="km_last" class="input-full" readonly></ons-input>
+								<ons-input type="number" placeholder="KM Last" modifier="material large" id="km_last" class="input-full" readonly></ons-input>
 							</ons-col>
 						</ons-row><br>
 
@@ -166,34 +164,37 @@
 								<label for="">PENGISIAN</label>
 							</ons-col>
 							<ons-col width="33%">
-								<ons-input type="number" placeholder="Realisasi Pengisian" modifier="material large" id="total_realisasi" class="input-full"></ons-input>
+								<ons-input type="number" placeholder="Realisasi" modifier="material large" id="total_real" class="input-full"></ons-input>
 							</ons-col>
 							<ons-col width="4%">
 							</ons-col>
 							<ons-col width="33%">
-								<ons-input type="number" placeholder="Perintah Isi" modifier="material large" id="total_liter" class="input-full" readonly></ons-input>
+								<ons-input type="number" placeholder="Rekomendasi" modifier="material large" id="total_recommended" class="input-full" readonly></ons-input>
 							</ons-col>
 						</ons-row><br>
 
+                        <br>
                         <ons-button class="big" modifier="material large" onclick="app.input()">
                             SIMPAN
                         </ons-button>
 
 						<br><br>
 
-						<ons-row>
-							<ons-col width="48%">
-								<ons-button class="big" modifier="material large" onclick="app.sinkronisasi()">
-		                            SINKRONISASI
-		                        </ons-button>
-							</ons-col>
-							<ons-col width="4%"></ons-col>
-							<ons-col width="48%">
-								<ons-button class="big" modifier="material large" onclick="app.logout()">
-		                            LOGOUT
-		                        </ons-button>
-							</ons-col>
-						</ons-row>
+                        <ons-button class="big" modifier="material large" onclick="app.history()">
+                            HISTORY
+                        </ons-button>
+
+                        <br><br>
+
+                        <ons-button class="big" modifier="material large" onclick="app.sinkronisasi()">
+                            SINKRONISASI
+                        </ons-button>
+
+                        <br><br>
+
+                        <ons-button class="big" modifier="material large" onclick="app.logout()">
+                            LOGOUT
+                        </ons-button>
                     </div>
                 </div>
             </ons-page>
@@ -213,14 +214,36 @@
                 <div class="background"></div>
                 <div class="content">
 
-					<table class="table">
-						<tbody>
-							<tr><td>Unit</td><td id="unit"></td></tr>
-							<tr><td>Total Realisasi Pengisian</td><td id="total_realisasi"></td></tr>
-							<tr><td>HM</td><td id="hm"></td></tr>
-							<tr><td>KM</td><td id="km"></td></tr>
-						</tbody>
-					</table>
+                    <div style="padding:15px;margin-bottom:20px;border:1px solid transparent;border-radius:4px;color:#a94442;background-color:#f2dede;border-color:#ebccd1;text-align:center;">
+                        Silakan review terlebih dahulu sebelum melakukan otorisasi.
+                    </div>
+
+                    <ons-list>
+                        <ons-list-item modifier="longdivider">
+                            <div class="left">Unit</div>
+                            <div class="right">
+                                <span class="list-item__title" id="unit" style="font-weight:bold;"></span>
+                            </div>
+                        </ons-list-item>
+                        <ons-list-item modifier="longdivider">
+                            <div class="left">KM</div>
+                            <div class="right">
+                                <span class="list-item__title" id="km" style="font-weight:bold;"></span>
+                            </div>
+                        </ons-list-item>
+                        <ons-list-item modifier="longdivider">
+                            <div class="left">HM</div>
+                            <div class="right">
+                                <span class="list-item__title" id="hm" style="font-weight:bold;"></span>
+                            </div>
+                        </ons-list-item>
+                        <ons-list-item modifier="longdivider">
+                            <div class="left">Realisasi Pengisian</div>
+                            <div class="right">
+                                <span class="list-item__title" id="total_real" style="font-weight:bold;"></span>
+                            </div>
+                        </ons-list-item>
+                    </ons-list>
 
                     <div style="margin:30px auto 0;width:300px;">
                         <ons-input type="text" placeholder="NRP" modifier="material large" id="nrp" class="input-full"></ons-input>
@@ -326,7 +349,6 @@
 
         <script type="text/javascript" src="js/jquery.min.js"></script>
         <script type="text/javascript" src="lib/onsenui/js/onsenui.js"></script>
-        <script type="text/javascript" src="lib/CryptoJS-v3.1.2/rollups/md5.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="js/index.js"></script>
     </body>
