@@ -1,61 +1,99 @@
 var app = {
-
+    counter             : 0,
     db                  : null,
     user                : null,
-    wifiConnection      : false,
-    serverConnection    : false,
-    serverIsBusy        : false,
-    serverUrl           : 'http://10.13.27.60/api/',
-    // serverUrl           : 'http://192.168.104.228:8000/api/',
-	geoLog				: null,
-	data				: {},
+    server_is_busy      : false,
+    sync_status         : true,
+    data				: {},
+    wifi_connection     : false,
+    server_connection   : false,
+    server_url          : 'http://10.13.27.60/api/',
+    // server_url       : 'http://192.168.0.15:8000/api/',
 
     initialize: function() {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
     },
 
     onDeviceReady: function() {
-        var counter = 0;
+        var _this = this;
 		AndroidFullScreen.immersiveMode();
 		window.plugins.insomnia.keepAwake();
 
-        var t = this;
-
-		if (localStorage.serverUrl == null) {
-			localStorage.serverUrl = t.serverUrl;
+		if (localStorage.server_url == null) {
+			localStorage.server_url = _this.server_url;
 		}
 
-		if (localStorage.fuelTankName == null) {
-			localStorage.fuelTankName = 'BELUM TERDAFTAR';
+		if (localStorage.fuel_tank_name == null) {
+			localStorage.fuel_tank_name = 'BELUM TERDAFTAR';
 		}
 
-		$('#fuel-tank-info').html(localStorage.fuelTankName);
+		$('#fuel-tank-info').html(localStorage.fuel_tank_name);
 
-		t.getDbConnection();
+		_this.get_db_connection();
 
 		if (localStorage.dbPopulated == null) {
-			t.initDb();
+			_this.init_db();
 		}
 
         // redirect to main if already logged in
-        if (localStorage.isLoggedIn == 'true') {
-            t.goTo('form-fuel.html').then(function() {
-                $('#fuel-tank').html(localStorage.fuelTankName);
+        if (localStorage.is_logged_in == 'true') {
+            _this.goTo('form-fuel.html').then(function() {
+                $('#fuel-tank').html(localStorage.fuel_tank_name);
                 $('#user').html(localStorage.name);
             });
         }
 
-        // force upload every 1 sec
+        var counter = 0;
+
         setInterval(function() {
-            if (localStorage.isRegistered == 'true') {
-                t.upload();
+            // counter tetep taruh di atas
+            counter += 1;
 
-                if (counter%300 == 0) {
-                    t.sinkronisasi();
-                }
-
-                counter += 1;
+            // uncomment in prod
+            if (navigator.connection.type != Connection.WIFI) {
+                _this.wifi_connection = false;
+                _this.server_connection = false;
+                return;
             }
+
+            _this.wifi_connection = true;
+
+            if (_this.server_is_busy == true) {
+                return;
+            }
+
+            if (_this.server_connection == true) {
+                if (localStorage.is_registered == 'true') {
+                    _this.upload();
+
+                    if (counter % 300 == 0) {
+                        _this.sinkronisasi();
+                    }
+                }
+            }
+
+            else {
+                $.ajax({
+                    url: localStorage.server_url + 'ping',
+                    timeout: 3000,
+                    type: 'get', dataType: 'json', crossDomain: true,
+                    success: function(r) {
+                        _this.server_connection = true;
+
+                        if (localStorage.is_registered == 'true') {
+                            _this.upload();
+
+                            if (counter % 300 == 0) {
+                                _this.sinkronisasi();
+                            }
+                        }
+                    },
+                    error: function(e) {
+                        _this.server_connection = false;
+                    }
+                });
+            }
+
         }, 1000);
 
     },
@@ -120,15 +158,25 @@ var app = {
 			return;
 		}
 
-		if (hm == '') {
+		if (hm === '') {
 			alert('HM tidak boleh kosong');
 			return;
 		}
 
-		if (km == '') {
+		if (km === '') {
 			alert('KM tidak boleh kosong');
 			return;
 		}
+
+        if (hm < hm_last) {
+            alert('HM kurang dari HM Last');
+			return;
+        }
+
+        if (km < km_last) {
+            alert('KM kurang dari KM Last');
+			return;
+        }
 
 		// sukses validasi
 		t.goTo('otorisasi.html', 'reset').then(function() {
@@ -185,7 +233,7 @@ var app = {
                             var data = [
                                 t.dateToYmdHis(now, 'Ymd'),
                                 t.getShift(),
-								localStorage.fuelTankId,
+								localStorage.fuel_tank_id,
 								t.data.unit_id,
 								employee.id,
 								t.data.start_time,
@@ -196,7 +244,7 @@ var app = {
                                 t.data.km_last,
 								t.data.total_real,
 								t.data.total_recommended,
-                                localStorage.userId
+                                localStorage.user_id
 							];
 
 							t.save(data);
@@ -221,7 +269,7 @@ var app = {
 				t.goTo('form-fuel.html', 'reset').then(function() {
 					navigator.notification.alert('Otorisasi BERHASIL! Data berhasil disimpan.');
 					t.data = {};
-					$('#fuel-tank').html(localStorage.fuelTankName);
+					$('#fuel-tank').html(localStorage.fuel_tank_name);
                     $('#user').html(localStorage.name);
 				});
 
@@ -272,23 +320,19 @@ var app = {
 	},
 
 	getShift: function() {
-		// 07.01 => 19.00 S1
-		// 19.01 => 07.00 S2
+		// 06.01 => 18.00 S1
+		// 18.01 => 06.00 S2
 
 		var now = new Date();
 		var jam = now.getHours();
 
-		return (jam >= 7 && jam <= 19) ? 1 : 2;
+		return (jam >= 6 && jam <= 18) ? 1 : 2;
 	},
 
 	// upload data transaksi
     upload: function() {
-        if (navigator.connection.type != Connection.WIFI) {
-            return;
-        }
-
-        var t = this;
-		t.db.executeSql('SELECT * FROM `fuel_refills` WHERE `uploaded` = 0 ORDER BY `id` ASC LIMIT 50', [], function(r) {
+        var _this = this;
+		_this.db.executeSql('SELECT * FROM `fuel_refills` WHERE `uploaded` = 0 ORDER BY `id` ASC LIMIT 50', [], function(r) {
 
 			if (r.rows.length == 0) {return;}
 
@@ -304,16 +348,18 @@ var app = {
 			idToDelete += '0'; // biar ga error
 			var rows = JSON.stringify(dataToSend);
 
-			// then ajax here
+            // jangan dikasih timeout
 			$.ajax({
-				url: localStorage.serverUrl + 'fuelRefill',
+				url: localStorage.server_url + 'fuelRefill',
 				data: {rows:rows},
 				crossDomain: true, type: 'post', dataType: 'json',
+                beforeSend: function() {
+                    _this.server_is_busy = true;
+                },
 				success: function(res) {
-					t.db.transaction(function(tx) {
+					_this.db.transaction(function(tx) {
 						tx.executeSql('UPDATE `fuel_refills` SET `uploaded` = 1 WHERE id IN ('+idToDelete+')', [],
 							function(tx,result) {
-								// Reset counter local data (hanya log_geolocation aja yg penting)
 								tx.executeSql('SELECT id FROM `fuel_refills` WHERE `uploaded` = 0', [], function(tx,r) {
 									localStorage.localData = r.rows.length;
 								});
@@ -322,8 +368,10 @@ var app = {
 							}
 						);
 					});
+                    _this.server_is_busy = false;
 				},
 				error: function(e) {
+                    _this.server_is_busy = false;
 				}
 			});
 		},
@@ -341,10 +389,9 @@ var app = {
     },
 
 	batal: function() {
-		var t = this;
-
-		t.goTo('form-fuel.html', 'reset').then(function() {
-			$('#fuel-tank').html(localStorage.fuelTankName);
+		var _this = this;
+		_this.goTo('form-fuel.html', 'reset').then(function() {
+			$('#fuel-tank').html(localStorage.fuel_tank_name);
             $('#user').html(localStorage.name);
 		});
 	},
@@ -359,78 +406,120 @@ var app = {
             return;
         }
 
-        t.db.transaction(function(tx) {
-            window.plugins.spinnerDialog.show(null, 'Checking user locally...');
-            tx.executeSql('SELECT * FROM users WHERE email LIKE ?', [email], function(tx, r) {
-                if (r.rows.length == 0) {
-                    window.plugins.spinnerDialog.hide();
-                    navigator.notification.alert('User tidak terdaftar.');
-                    return;
-                }
+        window.plugins.spinnerDialog.show(null, 'Logging in...');
 
+        $.ajax({
+            url: localStorage.server_url + 'login',
+            timeout: 3000,
+            crossDomain: true, type: 'post', dataType: 'json',
+            data: {email:email, password:password},
+            success: function(res) {
                 window.plugins.spinnerDialog.hide();
-                t.user = r.rows.item(0);
+                t.user = res;
 
-                // kalau password-nya null harus ambil dari server
-                if (!t.user.password) {
-                    if (navigator.connection.type != Connection.WIFI) {
-                        navigator.notification.alert('Tidak terhubung ke server. Cek koneksi Wifi.');
-                        return;
-                    }
+                t.goTo('form-fuel.html', 'reset').then(function() {
+                    localStorage.name 		= t.user.name;
+                    localStorage.email 	    = t.user.email;
+                    localStorage.user_id 	= t.user.id;
+                    localStorage.is_logged_in = 'true';
 
-                    window.plugins.spinnerDialog.show(null, 'Checking user on the server...');
-                    $.ajax({
-                        url: localStorage.serverUrl + 'login',
-                        crossDomain: true, type: 'post', dataType: 'json',
-                        data: {email:email, password:password},
-                        success: function(res) {
-                            window.plugins.spinnerDialog.hide();
-                            window.plugins.spinnerDialog.show(null, 'Saving user to device...');
-                            t.user = res;
+                    $('#fuel-tank').html(localStorage.fuel_tank_name);
+                    $('#user').html(localStorage.name);
+                });
 
-                            tx.executeSql(
-                                'UPDATE users SET password = ?, name = ? WHERE email LIKE ?',
-                                [password, res.name, email],
-                                function(tx, rr) {
-                                    // nothing todo
-                                }, function(tx, e) {
-                                    // kecil kemungkinan
-                                    alert('Failed to save user to device. ' + JSON.stringify(e));
-                                    return;
-                                }
-                            );
+            },
+            error: function(e) {
+                window.plugins.spinnerDialog.hide();
+                navigator.notification.alert('Gagal login. Cek koneksi Wifi atau username/password salah.');
+            }
+        });
+    },
 
-                            window.plugins.spinnerDialog.hide();
-                        },
-                        error: function(e) {
-                            window.plugins.spinnerDialog.hide();
-                            navigator.notification.alert('Gagal login. Cek koneksi Wifi atau username/password salah.');
-                            return;
-                        }
-                    });
-                }
+    check_user_offline: function(email) {
+        this.db.executeSql("SELECT * FROM `users` WHERE `email` LIKE ? ", [email], function(r) {
+            return r.rows.length == 0 ? false : r.rows.item(0);
+        }, function(e) {
+            return false;
+        });
 
-                else if (t.user.password != password) {
-                    navigator.notification.alert('Password salah!');
-                    return;
-                }
+        return false;
+    },
 
-            }, function(tx, e) {
-                alert(JSON.stringify(e));
-                return;
+    update_user: function(name, email, password, id) {
+        this.db.transaction(function(tx) {
+            var sql = "";
+            var sql_insert = "INSERT INTO `users` (name, email, password, id) VALUES (?,?,?,?)";
+            var sql_update = "UPDATE `users` SET name = ?, email = ?, password = ? WHERE id = ?";
+
+            tx.executeSql("SELECT * FROM `users` WHERE email LIKE ?", [email], function(tx, r) {
+                sql = r.rows.length == 0 ? sql_insert : sql_update;
+
+                tx.executeSql(sql, [name, email, password, id], function(tx, rr) {
+                    alert(JSON.stringify(rr))
+                }, function(tx, e) {
+                    alert(JSON.stringify(e))
+                });
+
             });
         });
+    },
 
-        t.goTo('form-fuel.html', 'reset').then(function() {
-            localStorage.name 		= t.user.name;
-            localStorage.email 	    = t.user.email;
-            localStorage.userId 	= t.user.id;
-            localStorage.isLoggedIn = 'true';
+    login_belum_jadi: function() {
+        var _this = this;
+        var email = $('#email').val();
+        var password = $('#password').val();
 
-            $('#fuel-tank').html(localStorage.fuelTankName);
+        if (email == '' || password == '') {
+            navigator.notification.alert('Email dan password tidak boleh kosong');
+            return;
+        }
+
+        if (_this.server_connection == true) {
+            $.ajax({
+                url: localStorage.server_url + 'login',
+                timeout: 3000,
+                crossDomain: true, type: 'post', dataType: 'json',
+                data: {email:email, password:password},
+                beforeSend: function() {
+                    window.plugins.spinnerDialog.show(null, 'Checking user on the server...');
+                },
+                success: function(res) {
+                    _this.user = res;
+                    window.plugins.spinnerDialog.hide();
+                    _this.update_user(res.name, email, password, res.id);
+                    _this.go_to_main();
+                },
+                error: function(e) {
+                    window.plugins.spinnerDialog.hide();
+                    navigator.notification.alert('Username/password salah.');
+                }
+            });
+        }
+
+        else {
+            var user = _this.check_user_offline(email);
+
+            if (user && user.password == password) {
+                _this.user = user;
+                _this.go_to_main();
+            }
+
+            else {
+                navigator.notification.alert('Username/password salah.');
+            }
+        }
+    },
+
+    go_to_main: function() {
+        var _this = this;
+        _this.goTo('form-fuel.html', 'reset').then(function() {
+            localStorage.name = _this.user.name;
+            localStorage.email = _this.user.email;
+            localStorage.user_id = _this.user.id;
+            localStorage.is_logged_in = 'true';
+            $('#fuel-tank').html(localStorage.fuel_tank_name);
             $('#user').html(localStorage.name);
         });
-
     },
 
     scanNrp: function() {
@@ -457,19 +546,19 @@ var app = {
     },
 
     logout: function() {
-		var t = this;
+		var _this = this;
         ons.notification.confirm('Anda yakin akan logout?', {
             title: 'LOGOUT',
             buttonLabels: ['TIDAK', 'LOGOUT'],
             callback: function(btn) {
                 if (btn == 1) {
-                    t.goTo('login.html', 'reset').then(function() {
-						t.user = null;
+                    _this.goTo('login.html', 'reset').then(function() {
+						_this.user = null;
 						localStorage.name = null;
 						localStorage.email = null;
-						localStorage.isLoggedIn = 'false';
-						localStorage.userId = null;
-						$('#fuel-tank-info').html(localStorage.fuelTankName);
+						localStorage.is_logged_in = 'false';
+						localStorage.user_id = null;
+						$('#fuel-tank-info').html(localStorage.fuel_tank_name);
                     });
                 }
             }
@@ -477,7 +566,7 @@ var app = {
     },
 
 	admin: function() {
-        var t = this;
+        var _this = this;
         var pass = $('#admin-pass').val();
 
         if (pass != 'Kpp12345persada') {
@@ -486,48 +575,50 @@ var app = {
         }
 
 		localStorage.adminIsLoggedIn = 'true';
-		t.goTo('admin.html', 'replace');
+		_this.goTo('admin.html', 'replace');
     },
 
 	logoutAdmin: function() {
-        var t = this;
+        var _this = this;
         ons.notification.confirm('Anda yakin akan logout dari halaman admin?', {
             title: 'LOGOUT',
             buttonLabels: ['TIDAK', 'LOGOUT'],
             callback: function(btn) {
                 if (btn == 1) {
-                    t.goTo('login.html', 'reset').then(function() {
+                    _this.goTo('login.html', 'reset').then(function() {
                         localStorage.adminIsLoggedIn = 'false';
-						$('#fuel-tank-info').html(localStorage.fuelTankName);
+						$('#fuel-tank-info').html(localStorage.fuel_tank_name);
                     });
                 }
             }
         });
     },
 
-	setServerUrl: function() {
+	set_server_url: function() {
+        // uncomment in prod
         if (navigator.connection.type != Connection.WIFI) {
             navigator.notification.alert('Check koneksi WIFI!');
             return;
         }
 
-        var t = this;
-        var serverUrl = $('#server-url').val();
+        var _this = this;
+        var server_url = $('#server-url').val();
 
-        if (serverUrl == '') {
+        if (server_url == '') {
             navigator.notification.alert('Server URL tidak boleh kosong');
         } else {
-            t.goTo('admin.html', 'replace').then(function() {
-	            t.serverUrl = localStorage.serverUrl = serverUrl;
+            _this.goTo('admin.html', 'replace').then(function() {
+	            _this.server_url = localStorage.server_url = server_url;
                 $.ajax({
-                    url: localStorage.serverUrl + 'ping',
+                    url: localStorage.server_url + 'ping',
+                    timeout: 3000,
                     type: 'get', dataType: 'json', crossDomain: true,
                     beforeSend: function() {
                         window.plugins.spinnerDialog.show(null, 'Checking server connection...')
                     },
                     success: function(r) {
                         window.plugins.spinnerDialog.hide();
-                        navigator.notification.alert('Connection to server SUCCESS. ' + serverUrl);
+                        navigator.notification.alert('Connection to server SUCCESS. ' + server_url);
                     },
                     error: function(e) {
                         window.plugins.spinnerDialog.hide();
@@ -538,24 +629,17 @@ var app = {
         }
     },
 
-    // test dulu sebelum sinkronisasi
 	sinkronisasi: function() {
-        if (navigator.connection.type != Connection.WIFI) {
-            return;
+        if (this.server_connection == true) {
+            this.getEmployee();
+            this.getFuelTank();
+            this.getUnit();
+            this.getLastTransaction();
         }
 
-        var _this = this;
-        $.ajax({
-            url: localStorage.serverUrl + 'ping',
-            type: 'get', dataType: 'json', crossDomain: true,
-            success: function(r) {
-                // _this.getUser();
-                _this.getEmployee();
-        		_this.getFuelTank();
-                _this.getUnit();
-                _this.getLastTransaction();
-            },
-        });
+        else {
+            navigator.notification.alert('Sinkronisasi GAGAL.Tidak terhubung ke server!');
+        }
     },
 
     exit: function() {
@@ -569,15 +653,6 @@ var app = {
                 }
             }
         });
-    },
-
-	update: function() {
-		if (this.serverConnection == false) {
-			navigator.notification.alert('Tidak terhubung ke server. Cek koneksi wifi.');
-			return;
-		}
-
-		window.open(localStorage.serverUrl + 'update', '_blank');
     },
 
     dateToYmdHis: function(date, format) {
@@ -605,10 +680,14 @@ var app = {
         var t = this;
 
         $.ajax({
-            url: localStorage.serverUrl + 'employee',
+            url: localStorage.server_url + 'employee',
+            timeout: 3000,
             type: 'get', crossDomain: true, dataType: 'json',
             beforeSend: function() {
                 window.plugins.spinnerDialog.show(null, 'Fetching employee list...');
+            },
+            error: function(e) {
+                t.sync_status = false;
             },
             success: function(rows) {
                 var sql = []
@@ -646,45 +725,18 @@ var app = {
         });
     },
 
-    //  di eksekusi 1 kali saja waktu daftar device
-    getUser: function() {
-        var t = this;
-
-        $.ajax({
-            url: localStorage.serverUrl + 'user',
-            type: 'get', crossDomain: true, dataType: 'json',
-            beforeSend: function() {
-                window.plugins.spinnerDialog.show(null, 'Fetching user list...');
-            },
-            success: function(rows) {
-                t.db.transaction(function(tx) {
-                        rows.forEach(function(row) {
-                            var sql = "INSERT INTO `users` (id, email, name) VALUES (?,?,?)";
-                            var data = [row.id, row.email, row.name];
-                            tx.executeSql(sql, data);
-                        });
-                    },
-                    function(e) {
-                        window.plugins.spinnerDialog.hide();
-                        navigator.notification.alert('Failed to fetch user list. '+e.message);
-                    },
-                    function() {
-                        window.plugins.spinnerDialog.hide();
-                        // navigator.notification.alert('Employee list fetched OK : '+JSON.stringify(rows));
-                    }
-                );
-            }
-        });
-    },
-
     getUnit: function() {
         var t 	= this;
 
         $.ajax({
-            url: localStorage.serverUrl + 'unit',
+            url: localStorage.server_url + 'unit',
+            timeout: 3000,
             type: 'get', crossDomain: true, dataType: 'json',
             beforeSend: function() {
                 window.plugins.spinnerDialog.show(null, 'Fetching unit list...');
+            },
+            error: function(e) {
+                t.sync_status = false;
             },
             success: function(rows) {
                 var sql = []
@@ -726,10 +778,14 @@ var app = {
         var t 	= this;
 
         $.ajax({
-            url: localStorage.serverUrl + 'fuelTank',
+            url: localStorage.server_url + 'fuelTank',
+            timeout: 3000,
             type: 'get', crossDomain: true, dataType: 'json',
             beforeSend: function() {
                 window.plugins.spinnerDialog.show(null, 'Fetching fuel tank list...');
+            },
+            error: function(e) {
+                t.sync_status = false;
             },
             success: function(rows) {
                 var sql = []
@@ -769,13 +825,17 @@ var app = {
 	getLastTransaction: function() {
         var t = this;
         $.ajax({
-            url: localStorage.serverUrl + 'fuelRefill',
+            url: localStorage.server_url + 'fuelRefill',
+            timeout: 3000,
             type: 'get', crossDomain: true, dataType: 'json',
             beforeSend: function() {
                 window.plugins.spinnerDialog.show(null, 'Fetching last transaction...');
             },
+            error: function(e) {
+                t.sync_status = false;
+            },
             success: function(rows) {
-                t.truncateTable('last_trx');
+                t.truncate_table('last_trx');
                 t.db.transaction(function(tx) {
                         rows.forEach(function(row) {
                             var sql = "INSERT INTO `last_trx` (date, shift, fuel_tank_id, unit_id, employee_id, start_time, finish_time, hm, km, hm_last, km_last, total_real, total_recommended, user_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -832,12 +892,12 @@ var app = {
                 }
 
 				var fuelTank 				= r.rows.item(0);
-				localStorage.fuelTankId 	= fuelTank.id;
-				localStorage.fuelTankName 	= fuelTank.name;
-				localStorage.isRegistered	= 'true';
+				localStorage.fuel_tank_id 	= fuelTank.id;
+				localStorage.fuel_tank_name = fuelTank.name;
+				localStorage.is_registered	= 'true';
 
 				t.goTo('admin.html', 'replace').then(function() {
-					navigator.notification.alert('Device untuk fuel tank '+localStorage.fuelTankName+' BERHASIL ditambahkan.');
+					navigator.notification.alert('Device untuk fuel tank '+localStorage.fuel_tank_name+' BERHASIL ditambahkan.');
 				});
 
             }, function(tx,e) {
@@ -846,7 +906,7 @@ var app = {
         });
     },
 
-    getDbConnection: function() {
+    get_db_connection: function() {
         this.db = window.sqlitePlugin.openDatabase({
             name: "imis_fuel.db",
             location: "default",
@@ -855,7 +915,7 @@ var app = {
         });
     },
 
-    truncateTable: function(tbl) {
+    truncate_table: function(tbl) {
         this.db.transaction(function(tx) {
             tx.executeSql("DELETE FROM `"+tbl+"`", [],
                 function(tx,r) {console.log('TABLE '+tbl+' TRUNCATED');},
@@ -864,7 +924,7 @@ var app = {
         });
     },
 
-    initDb: function() {
+    init_db: function() {
         var sql = [];
 
         sql.push("CREATE TABLE `fuel_refills` ("+

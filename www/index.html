@@ -186,7 +186,7 @@
 
                         <br><br>
 
-                        <ons-button class="big" modifier="material large" onclick="app.sinkronisasi()">
+                        <ons-button class="big sync-btn" modifier="material large" onclick="app.sinkronisasi()">
                             SINKRONISASI
                         </ons-button>
 
@@ -275,11 +275,11 @@
                 <div class="background"></div>
                 <div class="content">
                     <div style="margin:15px auto 15px;width:300px;">
-                        <ons-button class="big" modifier="material large" onclick="app.goTo('server-url.html', 'push').then(function() {$('#server-url').val(localStorage.serverUrl)})">
+                        <ons-button class="big" modifier="material large" onclick="app.goTo('server-url.html', 'push').then(function() {$('#server-url').val(localStorage.server_url)})">
                             SETTING SERVER URL
                         </ons-button>
                         <br><br>
-                        <ons-button class="big" modifier="material large" onclick="app.sinkronisasi()">
+                        <ons-button class="big sync-btn" modifier="material large" onclick="app.sinkronisasi()">
                             SINKRONISASI
                         </ons-button>
                         <br><br>
@@ -315,7 +315,7 @@
                     <div style="margin:30px auto 0;width:300px;">
                         <ons-input type="text" placeholder="SERVER URL" modifier="material large" id="server-url" class="input-full"></ons-input>
                         <br><br>
-                        <ons-button class="big" modifier="material large" onclick="app.setServerUrl()">
+                        <ons-button class="big" modifier="material large" onclick="app.set_server_url()">
                             SET SERVER URL
                         </ons-button>
                     </div>

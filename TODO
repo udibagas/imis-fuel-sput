@@ -1,2 +1,6 @@
 - metode buat login offline & sinkronisasi users
 - simplify halaman admin
+
+flow login :
+    online ? langsung ke server, update/insert di local db
+    offline ? check di local db aja
