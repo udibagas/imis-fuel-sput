@@ -229,10 +229,16 @@ var app = {
 					callback: function(btn) {
 						if (btn == 1) {
 							var now = new Date();
+                            var shift = t.getShift();
+                            if (shift == 2) {
+                                now.setDate(date.getDate() - 1);
+                            }
+
+                            var date = t.dateToYmdHis(now, 'Ymd');
 
                             var data = [
-                                t.dateToYmdHis(now, 'Ymd'),
-                                t.getShift(),
+                                date,
+                                shift,
 								localStorage.fuel_tank_id,
 								t.data.unit_id,
 								employee.id,
