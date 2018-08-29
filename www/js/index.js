@@ -231,7 +231,7 @@ var app = {
 							var now = new Date();
                             var shift = t.getShift();
                             if (shift == 2) {
-                                now.setDate(date.getDate() - 1);
+                                now.setDate(now.getDate() - 1);
                             }
 
                             var date = t.dateToYmdHis(now, 'Ymd');
